@@ -1,0 +1,230 @@
+# ============================================================
+# PROJECT.txt - Complete Project Configuration
+# gh-setup - GitHub Repo Auto Setup & Sync
+# ============================================================
+
+# --- BASIC INFO ---
+name: gh-setup
+description: Single-file Python GUI that creates, scaffolds, and syncs GitHub repos with zero manual setup
+license: MIT
+visibility: public
+author: sudipdasin
+language: Python
+version: 1.0.0
+keywords: github,git,repo,setup,sync,scaffold,linux,open-source
+
+# --- PROJECT STRUCTURE ---
+structure:
+  gh-setup.py              # Main application (single file, no deps beyond stdlib)
+  PROJECT.txt              # This file - project metadata
+  README.md                # Auto-generated project overview
+  LICENSE                  # Auto-generated from license field
+  CONTRIBUTING.md          # Auto-generated contribution guide
+  CHANGELOG.md             # Auto-generated changelog
+  .gitignore               # Auto-generated ignore patterns
+  .gitattributes           # Auto-generated text/binary rules
+  .editorconfig            # Auto-generated editor settings
+  NOTES.md                 # Developer notes + TODO
+  .github/
+    ISSUE_TEMPLATE/
+      bug_report.md        # Bug report template
+      feature_request.md   # Feature request template
+    PULL_REQUEST_TEMPLATE.md  # PR checklist
+    workflows/
+      ci.yml               # GitHub Actions CI
+
+# --- SCAFFOLD TOGGLES ---
+scaffold:
+  readme: yes
+  license: yes
+  contributing: yes
+  changelog: yes
+  gitignore: yes
+  gitattributes: yes
+  editorconfig: yes
+  notes: yes
+  issue_template: yes
+  pr_template: yes
+  cicd: yes
+
+# --- PREREQUISITES ---
+prerequisites:
+  - Linux (XFCE, GNOME, KDE)
+  - Python 3.8+
+  - Git 2.30+
+  - python3-tk (sudo apt install python3-tk)
+  - No pip packages required (stdlib only)
+
+# --- INSTALLATION ---
+installation:
+  - "git clone https://github.com/sudipdasin/gh-setup.git"
+  - "cd gh-setup"
+  - "chmod +x gh-setup.py"
+  - "python3 gh-setup.py"
+
+# --- USAGE ---
+usage:
+  step1: "Select project folder (auto-creates PROJECT.txt with smart defaults)"
+  step2: "Edit PROJECT.txt if needed, then click Import"
+  step3: "Click Login via Browser, authorize in GitHub"
+  step4: "Click CREATE + SCAFFOLD + PUSH"
+  step5: "Subsequent runs: PUSH / PULL / SYNC"
+
+# --- CONFIGURATION ---
+configuration:
+  config_file: "~/.config/gh-setup/config.json"
+  oauth_app: "gh-setup (Device Flow enabled)"
+  token_scope: "repo"
+  auth_methods: "Browser (Device Flow) OR manual token paste"
+  storage: "Token stored locally in config.json, never sent to third parties"
+
+# --- CONTRIBUTING ---
+contributing:
+  workflow: fork-and-branch
+  branch_prefixes:
+    feat: "New features"
+    fix: "Bug fixes"
+    docs: "Documentation only"
+    style: "Formatting, no logic change"
+    refactor: "Code change, no behavior change"
+    perf: "Performance improvements"
+    test: "Adding or updating tests"
+    chore: "Build process, dependencies"
+  commit_style: conventional-commits
+  pr_requirements:
+    - Self-reviewed code
+    - Tests added/updated (if applicable)
+    - Documentation updated (if applicable)
+    - No breaking changes (or documented in PR)
+  code_style:
+    language: Python
+    formatter: "Black (default settings)"
+    linter: "Ruff (default rules)"
+    max_line_length: 120
+    type_hints: recommended
+
+# --- BUG REPORTING ---
+bug_reporting:
+  template: ".github/ISSUE_TEMPLATE/bug_report.md"
+  required_fields:
+    - "Clear description of the bug"
+    - "Steps to reproduce (numbered)"
+    - "Expected behavior"
+    - "Actual behavior"
+    - "OS and version"
+    - "Python version"
+    - "GPU (if relevant)"
+    - "Screenshots or terminal output"
+  process:
+    - "Search existing issues first"
+    - "Use the bug report template"
+    - "Maintainer triages within 48 hours"
+    - "Label: bug, priority, milestone"
+    - "Fixed in next release or hotfix"
+
+# --- FEATURE REQUESTS ---
+feature_requests:
+  template: ".github/ISSUE_TEMPLATE/feature_request.md"
+  required_fields:
+    - "Problem this solves"
+    - "Proposed solution"
+    - "Alternative solutions considered"
+  process:
+    - "Search existing issues first"
+    - "Use the feature request template"
+    - "Community votes (thumbs up) determine priority"
+    - "Accepted features get a milestone"
+
+# --- RELEASE PROCESS ---
+releases:
+  versioning: semantic-versioning
+  format: "vMAJOR.MINOR.PATCH"
+  process:
+    - "Update CHANGELOG.md [Unreleased] section"
+    - "Tag: git tag -a v1.0.0 -m 'Release v1.0.0'"
+    - "Push tag: git push origin v1.0.0"
+    - "GitHub auto-generates release notes from conventional commits"
+  cadence: "Monthly minor releases, hotfixes as needed"
+
+# --- CI/CD ---
+ci:
+  platform: github-actions
+  triggers:
+    - "Push to main"
+    - "Pull request to main"
+  jobs:
+    - "Lint (py_compile all .py files)"
+    - "Syntax check (ast.parse)"
+    - "Smoke test (import all modules)"
+  branches:
+    main: "Production - auto-deploy on push"
+    dev: "Development - merge target for PRs"
+
+# --- CODE OF CONDUCT ---
+code_of_conduct:
+  base: "Contributor Covenant v2.1"
+  summary: |
+    We pledge to make participation in our community
+    a harassment-free experience for everyone, regardless
+    of level of experience, gender, gender identity and
+    expression, sexual orientation, disability, personal
+    appearance, body size, ethnicity, age, religion, or
+    nationality.
+
+# --- SECURITY ---
+security:
+  policy: |
+    To report a security issue, email the maintainer directly
+    rather than using public issues. Response within 72 hours.
+    Do not disclose a security vulnerability until a fix is available.
+  token_handling: |
+    - Token stored in ~/.config/gh-setup/config.json (chmod 600)
+    - Token embedded in git remote URL only during push
+    - Token removed from remote URL immediately after push
+    - Token never logged, never sent to third-party servers
+
+# --- ROADMAP ---
+roadmap:
+  v1_1:
+    - "Support for GitLab and Gitea"
+    - "Multi-remote sync (mirror repos)"
+    - "Dark/light theme toggle"
+  v2_0:
+    - "Batch repo creation (import folder of projects)"
+    - "Web-based dashboard (optional server mode)"
+    - "Plugin system for custom scaffold templates"
+  long_term:
+    - "Desktop app packaging (AppImage, .deb, .rpm)"
+    - "Team/organization support"
+    - "Audit log for all operations"
+
+# --- LICENSE DETAILS ---
+license_details:
+  type: MIT
+  year: 2026
+  copyright: "sudipdasin"
+  summary: |
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software, to deal in the Software
+    without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software.
+  conditions:
+    - "Copyright notice must be included in all copies"
+    - "Permission notice must be included in all copies"
+  disclaimer: |
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+    OR OTHER LIABILITY.
+
+# --- ACKNOWLEDGMENTS ---
+acknowledgments:
+  - "GitHub OAuth Device Flow API"
+  - "Python stdlib (tkinter, urllib, subprocess, json)"
+  - "Linux community for feedback and testing"
+
+# --- CONTACT ---
+contact:
+  github: "https://github.com/sudipdasin"
+  issues: "https://github.com/sudipdasin/gh-setup/issues"
+  discussions: "https://github.com/sudipdasin/gh-setup/discussions"   
