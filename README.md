@@ -1,5 +1,7 @@
 # gh-setup
 
+
+![gh-setup](screenshot.jpg)
 Single-file Python GUI that creates, scaffolds, and syncs GitHub repos.
 Zero setup. Click Login → Authorize → Done.
 
