@@ -984,6 +984,12 @@ class GHSetup:
             self.status.set("Done: github.com/" + user["login"] + "/" + name)
             fl = "\n".join("  " + g for g in gen)
             messagebox.showinfo("Done", "Created & pushed!\n\n  github.com/" + user["login"] + "/" + name + "\n\nFiles generated:\n" + fl + "\n\nNext run: Push / Pull / Sync")
+            # Refresh UI to show PUSH/PULL/SYNC
+            if messagebox.askyesno("Refresh", "Repo created successfully!\n\nOpen in Sync mode?"):
+                self.root.destroy()
+                root2 = tk.Tk()
+                GHSetup(root2)
+                root2.mainloop()   
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
@@ -1003,11 +1009,16 @@ class GHSetup:
         p = self.path_var.get().strip()
         if not is_git_repo(p):
             messagebox.showerror("Error", "Not a git repo."); return
+        # Stash uncommitted changes before pull
+        git_run(p, "stash")
         r = git_run(p, "pull", "--rebase")
         if r.returncode != 0:
+            git_run(p, "stash", "pop")
             messagebox.showerror("Pull Failed", r.stderr)
         else:
-            self.status.set("Pulled"); self.show_status()
+            git_run(p, "stash", "pop")
+            self.status.set("Pulled"); self.show_status()   
+
 
     def do_sync(self):
         self.do_pull()
