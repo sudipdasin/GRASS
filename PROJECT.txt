@@ -4,8 +4,8 @@
 # ============================================================
 
 # --- BASIC INFO ---
-name: gh-setup
-description: Single-file Python GUI that creates, scaffolds, and syncs GitHub repos with zero manual setup
+name: GRASS
+description: GitHub Repo Auto Setup and Sync
 license: MIT
 visibility: public
 author: sudipdasin

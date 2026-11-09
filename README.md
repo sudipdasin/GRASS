@@ -1,7 +1,7 @@
-# gh-setup
+# GRASS
 
 
-![gh-setup](screenshot.jpg)
+![GRASS](screenshot.jpg)
 Single-file Python GUI that creates, scaffolds, and syncs GitHub repos.
 Zero setup. Click Login → Authorize → Done.
 
@@ -11,7 +11,7 @@ Zero setup. Click Login → Authorize → Done.
 
 ## Run
 
-    python3 gh-setup.py
+    python3 GRASS.py
 
 ## How it works
 
