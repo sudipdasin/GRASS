@@ -620,6 +620,8 @@ class GHSetup:
             tk.Button(btn, text="  SYNC  ", command=self.do_sync, bg=YELLOW, fg=BG, relief=tk.RAISED, bd=2, font=("Arial", 11, "bold"), padx=15, pady=7, cursor="hand2").pack(side=tk.LEFT, padx=3)
         else:
             tk.Button(btn, text="  CREATE + SCAFFOLD + PUSH  ", command=self.do_create, bg=GREEN, fg=BG, relief=tk.RAISED, bd=2, font=("Arial", 11, "bold"), padx=15, pady=7, cursor="hand2").pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(btn, text="  SAVE  ", command=self.save_project, bg=GREEN, fg=BG, relief=tk.RAISED, bd=2, font=("Arial", 10, "bold"), padx=10, pady=7, cursor="hand2").pack(side=tk.RIGHT, padx=(6, 0))
+        tk.Button(btn, text="  LOAD  ", command=self.load_project, bg=ACCENT, fg=BG, relief=tk.RAISED, bd=2, font=("Arial", 10, "bold"), padx=10, pady=7, cursor="hand2").pack(side=tk.RIGHT, padx=(6, 0))
         tk.Button(btn, text="  RESET  ", command=self.do_reset, bg=RED, fg=BG, relief=tk.RAISED, bd=2, font=("Arial", 10, "bold"), padx=10, pady=7, cursor="hand2").pack(side=tk.RIGHT, padx=(6, 0))
         self.status = tk.StringVar(value="Ready")
         ttk.Label(self.root, textvariable=self.status, style="Status.TLabel").pack(fill=tk.X, padx=15, pady=(0, 8))
@@ -1024,6 +1026,89 @@ class GHSetup:
         self.do_pull()
         if self.status.get() == "Pulled":
             self.do_push()
+
+    def save_project(self):
+        p = self.path_var.get().strip()
+        if not p or not os.path.isdir(p):
+            messagebox.showerror("Error", "Select a project folder first.")
+            return
+        state = {
+            "token": self.cfg.get("token", ""),
+            "username": self.cfg.get("username", ""),
+            "local_path": p,
+            "repo_name": self.repo_name,
+            "description": self.desc_var.get() if hasattr(self, "desc_var") else "",
+            "visibility": self.vis_var.get() if hasattr(self, "vis_var") else "public",
+            "license": self.license_var.get() if hasattr(self, "license_var") else "MIT",
+            "scaffold": {k: v.get() for k, v in self.sv.items()},
+        }
+        target = os.path.join(p, ".gh-project.json")
+        with open(target, "w") as f:
+            json.dump(state, f, indent=2)
+        self.status.set("Saved: " + target)
+        messagebox.showinfo("Saved", "Project saved to:\n  " + target + "\n\nIncludes: token, username, repo name, all settings.\nAfter Reset, click Load to restore everything.")   
+
+
+
+    def load_project(self):
+        p = self.path_var.get().strip()
+        if not p or not os.path.isdir(p):
+            p = filedialog.askdirectory(title="Select project folder")
+            if not p:
+                return
+            self.path_var.set(p)
+        target = os.path.join(p, ".gh-project.json")
+        if not os.path.exists(target):
+            messagebox.showerror("Not Found", "No .gh-project.json found in: " + p + "Click Save Project first to create one.")
+            return
+        with open(target, "r") as f:
+            state = json.load(f)
+        # Restore everything
+        self.cfg["token"] = state.get("token", "")
+        self.cfg["username"] = state.get("username", "")
+        self.cfg["auth_method"] = state.get("auth_method", "")
+        self.cfg["local_path"] = state.get("local_path", p)
+        self.cfg["repo_name"] = state.get("repo_name", "")
+        self.cfg["description"] = state.get("description", "")
+        self.cfg["visibility"] = state.get("visibility", "public")
+        self.cfg["license"] = state.get("license", "MIT")
+        save_config(self.cfg)
+        # Update UI
+        self.token_var.set(state.get("token", ""))
+        self.local_path = p
+        self.repo_name = state.get("repo_name", "")
+        self.existing = is_git_repo(p)
+        if hasattr(self, "name_var"):
+            self.name_var.set(self.repo_name)
+        if hasattr(self, "desc_var"):
+            self.desc_var.set(state.get("description", ""))
+        if hasattr(self, "vis_var"):
+            self.vis_var.set(state.get("visibility", "public"))
+        if hasattr(self, "license_var"):
+            self.license_var.set(state.get("license", "MIT"))
+        if hasattr(self, "path_var"):
+            self.path_var.set(p)
+        # Restore scaffold toggles
+        scaffold = state.get("scaffold", {})
+        for k, v in scaffold.items():
+            if k in self.sv:
+                self.sv[k].set(v)
+        # Verify token still works
+        if self.cfg.get("token"):
+            try:
+                gh = GitHub(self.cfg["token"])
+                user = gh.get_user()
+                self.gh = gh
+                self.status.set("Restored. Authenticated: @" + user["login"])
+                messagebox.showinfo("Restored", "  User: @" + user["login"] + "  Repo: " + self.repo_name + "  Path: " + p + "Everything is back.")
+            except Exception:
+                self.status.set("Restored. Token expired - re-auth needed.")
+                messagebox.showwarning("Token Expired", "Project loaded but token is no longer valid. Click Login via Browser to re-authenticate.")
+        else:
+            self.status.set("Restored. No token - login needed.")
+            messagebox.showinfo("Restored", "Project loaded. No token saved. Click Login via Browser to authenticate.")
+        if self.existing:
+            self.show_status()
 
     def do_reset(self):
         if messagebox.askyesno("Reset", "Clear saved config?\n(Does not delete local files or GitHub repo)"):
