@@ -27,3 +27,4 @@ Thumbs.db
 *.mp4
 *.mkv
 *.avi
+.gh-project.json
