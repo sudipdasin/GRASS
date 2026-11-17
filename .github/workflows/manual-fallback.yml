@@ -1,0 +1,15 @@
+name: GRASS manual Python syntax fallback
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m py_compile gh-setup.py gh-setup-v3.py gh-setup-v4.py
