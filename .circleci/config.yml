@@ -12,6 +12,8 @@ jobs:
             python -m py_compile gh-setup.py gh-setup-v3.py gh-setup-v4.py
 workflows:
   syntax-ci:
+    # CI_MASTER_TOGGLE: managed by scripts/ci-master-toggle.py
+    when: true
     jobs:
       - python-syntax:
           filters:
