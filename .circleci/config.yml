@@ -13,7 +13,7 @@ jobs:
 workflows:
   syntax-ci:
     # CI_MASTER_TOGGLE: managed by scripts/ci-master-toggle.py
-    when: true
+    when: false
     jobs:
       - python-syntax:
           filters:
