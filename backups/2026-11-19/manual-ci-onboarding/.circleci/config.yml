@@ -1,0 +1,21 @@
+version: 2.1
+jobs:
+  python-syntax:
+    docker:
+      - image: cimg/python:3.12
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Compile Python source without launching GUI
+          command: |
+            python -m py_compile gh-setup.py gh-setup-v3.py gh-setup-v4.py
+workflows:
+  syntax-ci:
+    # CI_MASTER_TOGGLE: managed by scripts/ci-master-toggle.py
+    when: false
+    jobs:
+      - python-syntax:
+          filters:
+            branches:
+              only: main
