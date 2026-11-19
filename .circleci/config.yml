@@ -1,5 +1,8 @@
 version: 2.1
 parameters:
+  auto_main_checks:
+    type: boolean
+    default: true
   run_manual_checks:
     type: boolean
     default: false
@@ -17,7 +20,7 @@ jobs:
 workflows:
   syntax-ci:
     # CI_MASTER_TOGGLE: managed by scripts/ci-master-toggle.py
-    when: << pipeline.parameters.run_manual_checks >>
+    when: << pipeline.parameters.auto_main_checks >>
     jobs:
       - python-syntax:
           filters:
