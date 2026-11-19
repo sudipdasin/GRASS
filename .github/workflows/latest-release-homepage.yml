@@ -1,0 +1,94 @@
+name: Sync latest release to repository homepage
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: latest-release-homepage
+  cancel-in-progress: false
+
+jobs:
+  update-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: true
+      - name: Update latest release section
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import datetime
+          import json
+          import os
+          import pathlib
+          import re
+          import subprocess
+          import urllib.request
+
+          repo = os.environ["GH_REPO"]
+          request = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/releases?per_page=100",
+              headers={
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "Accept": "application/vnd.github+json",
+                  "User-Agent": "community-release-homepage",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=30) as response:
+              releases = json.load(response)
+          published = [r for r in releases if not r.get("draft") and r.get("published_at")]
+          if not published:
+              print("No published release: no changes")
+              raise SystemExit(0)
+          release = max(published, key=lambda r: (r["published_at"], r["id"]))
+          tag = release["tag_name"]
+          url = release["html_url"]
+          def clean(value):
+              return str(value).replace("|", "\\|").replace("\n", " ").replace("\r", " ")
+          lines = [
+              "<!-- LATEST-RELEASE:START -->",
+              f"## Latest published release: {clean(tag)}",
+              f"**[Release notes and downloads]({url})**" + (" · Prerelease" if release["prerelease"] else ""),
+              "",
+              "| Asset | Download |",
+              "| --- | --- |",
+          ]
+          assets = release.get("assets", [])
+          for asset in assets:
+              lines.append(f"| {clean(asset['name'])} | [Download]({asset['browser_download_url']}) |")
+          if not assets:
+              lines.append(f"| Source archive | [Download ZIP]({url}) |")
+          lines.append("<!-- LATEST-RELEASE:END -->")
+          block = "\n".join(lines)
+          readme = pathlib.Path("README.md")
+          old = readme.read_text(encoding="utf-8") if readme.exists() else ""
+          pattern = r"<!-- LATEST-RELEASE:START -->.*?<!-- LATEST-RELEASE:END -->"
+          if re.search(pattern, old, flags=re.S):
+              new = re.sub(pattern, lambda _: block, old, count=1, flags=re.S)
+          else:
+              new = block + "\n\n" + old
+          if new == old:
+              print("Homepage already up to date")
+              raise SystemExit(0)
+          if readme.exists():
+              today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+              backup = pathlib.Path("backups") / today / "release-homepage" / f"README-{os.environ['GITHUB_RUN_ID']}.md"
+              backup.parent.mkdir(parents=True, exist_ok=True)
+              backup.write_bytes(readme.read_bytes())
+              subprocess.run(["git", "add", str(backup)], check=True)
+          readme.write_text(new, encoding="utf-8")
+          subprocess.run(["git", "add", "README.md"], check=True)
+          subprocess.run(["git", "-c", "user.name=github-actions[bot]",
+                          "-c", "user.email=41898282+github-actions[bot]@users.noreply.github.com",
+                          "commit", "-m", f"docs: show latest published release {tag}"], check=True)
+          subprocess.run(["git", "push"], check=True)
+          PY
