@@ -1,4 +1,8 @@
 version: 2.1
+parameters:
+  run_manual_checks:
+    type: boolean
+    default: false
 jobs:
   python-syntax:
     docker:
@@ -13,7 +17,7 @@ jobs:
 workflows:
   syntax-ci:
     # CI_MASTER_TOGGLE: managed by scripts/ci-master-toggle.py
-    when: false
+    when: << pipeline.parameters.run_manual_checks >>
     jobs:
       - python-syntax:
           filters:
