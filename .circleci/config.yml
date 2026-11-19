@@ -20,7 +20,10 @@ jobs:
 workflows:
   syntax-ci:
     # CI_MASTER_TOGGLE: managed by scripts/ci-master-toggle.py
-    when: << pipeline.parameters.auto_main_checks >>
+    when:
+      or:
+        - << pipeline.parameters.auto_main_checks >>
+        - << pipeline.parameters.run_manual_checks >>
     jobs:
       - python-syntax:
           filters:
